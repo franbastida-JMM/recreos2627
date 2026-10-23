@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEIP Vigilancia de Recreos 2026/2027 - Panel de Gestión y Auditoría</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col font-sans">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-600 p-2 rounded-lg text-white">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">CEIP Vigilancia de Recreos</h1>
+                        <p class="text-xs text-slate-400">Curso Escolar 2026/2027 • Panel de Auditoría y Gestión</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-brand-600 text-white">
+                        <i class="fa-solid fa-chart-pie mr-2"></i>Resumen Ejecutivo
+                    </button>
+                    <button onclick="switchTab('cuadrante')" id="nav-cuadrante" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-calendar-days mr-2"></i>Cuadrante Mensual
+                    </button>
+                    <button onclick="switchTab('auditoria')" id="nav-auditoria" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-800 relative">
+                        <i class="fa-solid fa-clipboard-check mr-2"></i>Auditoría & Hallazgos
+                        <span class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                    <button onclick="switchTab('simulador')" id="nav-simulador" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-sliders mr-2"></i>Simulador de Cobertura
+                    </button>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 transition">
+                        <i class="fa-solid fa-print mr-1"></i> Imprimir / PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div class="md:hidden border-t border-slate-800 bg-slate-900 px-2 pt-2 pb-3 flex overflow-x-auto space-x-2">
+            <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded text-xs whitespace-nowrap bg-brand-600 text-white">Resumen</button>
+            <button onclick="switchTab('cuadrante')" class="px-3 py-1.5 rounded text-xs whitespace-nowrap bg-slate-800 text-slate-300">Cuadrante</button>
+            <button onclick="switchTab('auditoria')" class="px-3 py-1.5 rounded text-xs whitespace-nowrap bg-slate-800 text-slate-300">Auditoría (3)</button>
+            <button onclick="switchTab('simulador')" class="px-3 py-1.5 rounded text-xs whitespace-nowrap bg-slate-800 text-slate-300">Simulador</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- ================= TAB 1: RESUMEN EJECUTIVO ================= -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            
+            <!-- Normative Banner -->
+            <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-indigo-800 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i class="fa-solid fa-gavel text-[200px]"></i>
+                </div>
+                <div class="relative z-10 max-w-3xl">
+                    <div class="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-400/30 mb-3 font-semibold">
+                        <i class="fa-solid fa-certificate"></i> Marco Normativo BOJA n.º 168 C3
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-tight mb-2">Orden de 31 de agosto de 2026</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                        Regula la jornada lectiva de vigilancia de recreos fijada en <strong>1 hora lectiva semanal</strong> (2 guardias de 30 min/semana). Cada guardia adicional genera <strong>0.5 horas de compensación lectiva</strong>, reduciendo la permanencia no lectiva del centro en la misma proporción.
+                    </p>
+                    <div class="flex flex-wrap gap-4 text-xs font-medium">
+                        <div class="bg-slate-800/80 backdrop-blur rounded-lg px-3 py-2 border border-slate-700">
+                            <span class="text-slate-400 block">Jornada Base</span>
+                            <span class="text-white font-bold text-sm">2 turnos (1h / semana)</span>
+                        </div>
+                        <div class="bg-slate-800/80 backdrop-blur rounded-lg px-3 py-2 border border-slate-700">
+                            <span class="text-slate-400 block">Compensación Excesos</span>
+                            <span class="text-emerald-400 font-bold text-sm">-0.5h permanencia no lectiva</span>
+                        </div>
+                        <div class="bg-slate-800/80 backdrop-blur rounded-lg px-3 py-2 border border-slate-700">
+                            <span class="text-slate-400 block">Excepciones Parciales</span>
+                            <span class="text-amber-300 font-bold text-sm">Ana (PT 15.5h) • Macarena (Rel. 14h)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Plantilla Docente</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-1">24</h3>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-user-group text-blue-500 mr-1"></i> Integrantes del Claustro</p>
+                    </div>
+                    <div class="bg-blue-50 text-blue-600 p-4 rounded-xl text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Puestos Diarios</p>
+                        <h3 class="text-3xl font-extrabold text-indigo-600 mt-1">11</h3>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-indigo-500 mr-1"></i> Cobertura en 4 zonas</p>
+                    </div>
+                    <div class="bg-indigo-50 text-indigo-600 p-4 rounded-xl text-xl">
+                        <i class="fa-solid fa-shield"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Exentos Diarios</p>
+                        <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">13</h3>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Balance de exenciones ($24 - 11$)</p>
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl text-xl">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Exactitud de Cómputo</p>
+                        <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">100%</h3>
+                        <p class="text-xs text-emerald-600 font-medium mt-1"><i class="fa-solid fa-check-double mr-1"></i> Nov - Feb Verificado</p>
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl text-xl">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zones Breakdown & Visual Map -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Zone Breakdown Card -->
+                <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4 border-b pb-3">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-lg">Distribución de Puestos por Zona</h3>
+                            <p class="text-xs text-slate-500">Requerimiento fijo de 11 vigilantes simultáneos</p>
+                        </div>
+                        <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-semibold">4 Zonas Operativas</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Zone 1 -->
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded">3 Puestos</span>
+                                <i class="fa-solid fa-child text-blue-500"></i>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Patio Infantil</h4>
+                            <p class="text-xs text-slate-500 mt-1">Códigos: TO1, TO2, PA</p>
+                            <p class="text-xs text-slate-600 font-medium mt-2">Educación Infantil + Apoyo (Macarena, Isabel, Eq. Directivo)</p>
+                        </div>
+
+                        <!-- Zone 2 -->
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">2 Puestos</span>
+                                <i class="fa-solid fa-tree text-emerald-500"></i>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Patio de los Olivos</h4>
+                            <p class="text-xs text-slate-500 mt-1">Códigos: OL, PU</p>
+                            <p class="text-xs text-slate-600 font-medium mt-2">1.er Ciclo de Primaria (Saray, Isabel, Mónica, Loli)</p>
+                        </div>
+
+                        <!-- Zone 3 -->
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-purple-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded">4 Puestos</span>
+                                <i class="fa-solid fa-futbol text-purple-500"></i>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Patio Pistas</h4>
+                            <p class="text-xs text-slate-500 mt-1">Códigos: PV, PF, PS, PI</p>
+                            <p class="text-xs text-slate-600 font-medium mt-2">2.º y 3.er Ciclo + Eq. Directivo + Religión (Mariloli)</p>
+                        </div>
+
+                        <!-- Zone 4 -->
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-amber-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded">2 Puestos</span>
+                                <i class="fa-solid fa-hands-holding-child text-amber-500"></i>
+                            </div>
+                            <h4 class="font-semibold text-slate-800">Aula Específica</h4>
+                            <p class="text-xs text-slate-500 mt-1">Códigos: AE1, AE2</p>
+                            <p class="text-xs text-slate-600 font-medium mt-2">Especialistas PT (Virginia, Pilar, Ana, Eva H.)</p>
+                        </div>
+                    </div>
+
+                    <!-- Coverage Equation Explanation -->
+                    <div class="mt-4 p-4 bg-slate-900 text-white rounded-xl flex items-center justify-between">
+                        <div class="space-y-1">
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Ecuación de Cobertura Diaria</p>
+                            <p class="text-sm font-mono text-emerald-400 font-bold">N_libres = N_plantilla (24) - N_puestos (11) = 13 exentos/día</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded border border-emerald-500/30">
+                                <i class="fa-solid fa-check mr-1"></i> Verificado en cada jornada
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Totals Chart -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg mb-1">Cómputo Total por Meses</h3>
+                        <p class="text-xs text-slate-500 mb-4">Guardias totales asignadas según días lectivos</p>
+                        <div class="h-64 relative">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 border-t pt-3 text-xs text-slate-500 flex justify-between">
+                        <span>Nov: 20 días (220)</span>
+                        <span>Dic: 14 días (154)</span>
+                        <span>Ene: 15 días (165)</span>
+                        <span>Feb: 19 días (209)</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TAB 2: CUADRANTE INTERACTIVO ================= -->
+        <section id="tab-cuadrante" class="tab-content hidden space-y-6">
+            
+            <!-- Controls Toolbar -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <!-- Month Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Mes Analizado</label>
+                        <select id="monthSelect" onchange="filterSchedule()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 px-3 py-2">
+                            <option value="nov">Noviembre 2026 (20 Días • 220 Turnos)</option>
+                            <option value="dic">Diciembre 2026 (14 Días • 154 Turnos)</option>
+                            <option value="ene">Enero 2027 (15 Días • 165 Turnos)</option>
+                            <option value="feb">Febrero 2027 (19 Días • 209 Turnos)</option>
+                            <option value="mar">Marzo 2027 (Incompleto - Auditoría)</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Box -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Buscar Docente</label>
+                        <div class="relative">
+                            <input type="text" id="teacherSearch" onkeyup="filterSchedule()" placeholder="Ej: Virginia, Mamen..." class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-2 pl-8 focus:ring-brand-500 focus:border-brand-500">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-3 text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Filter Zone -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Bloque / Zona</label>
+                        <select id="zoneFilter" onchange="filterSchedule()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-2">
+                            <option value="all">Todas las zonas</option>
+                            <option value="Infantil">Patio Infantil</option>
+                            <option value="1º Ciclo">Patio Olivos (1º Ciclo)</option>
+                            <option value="Pistas">Patio Pistas</option>
+                            <option value="Aula Específica">Aula Específica (PT)</option>
+                            <option value="Religión">Religión / Apoyo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 text-xs text-slate-500 bg-slate-100 p-2 rounded-lg">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i>
+                    <span>Base semanal estándar: 2 guardias/semana</span>
+                </div>
+            </div>
+
+            <!-- Schedule Table Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <h3 id="scheduleTableTitle" class="font-bold text-slate-800">Resumen Cómputo Noviembre 2026</h3>
+                    <span id="scheduleStatusBadge" class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold">
+                        <i class="fa-solid fa-check-circle mr-1"></i> Balance Cuadrante Exacto
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3">Docente</th>
+                                <th class="px-4 py-3">Zona Principal</th>
+                                <th class="px-4 py-3 text-center">Jornada</th>
+                                <th class="px-4 py-3 text-center">Guardias Asignadas</th>
+                                <th class="px-4 py-3 text-center">Promedio Semanal</th>
+                                <th class="px-4 py-3 text-center">Estado Horario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTableBody" class="divide-y divide-slate-200">
+                            <!-- Populated dynamically via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Calculator Component -->
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-xl p-6 shadow-md border border-slate-800">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="bg-indigo-600 p-2 rounded-lg"><i class="fa-solid fa-calculator text-lg"></i></div>
+                    <div>
+                        <h4 class="font-bold text-base">Calculadora de Compensación Horaria</h4>
+                        <p class="text-xs text-slate-300">Basado en la Orden de 31 de agosto de 2026 (BOJA n.º 168 C3)</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">Número de guardias realizadas al mes:</label>
+                        <input type="number" id="calcGuardias" value="10" min="0" max="30" oninput="calculateCompensation()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">Base mensual requerida (2/sem aprox):</label>
+                        <input type="number" id="calcBase" value="8" min="0" max="20" oninput="calculateCompensation()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:ring-indigo-500">
+                    </div>
+                    <div class="p-4 bg-slate-800/80 rounded-lg border border-slate-700 text-center">
+                        <span class="text-xs text-slate-400 block">Reducción Horas No Lectivas</span>
+                        <span id="calcResult" class="text-2xl font-extrabold text-emerald-400">1.0 Hora</span>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">(2 guardias en exceso × 0.5h)</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TAB 3: AUDITORÍA Y HALLAZGOS ================= -->
+        <section id="tab-auditoria" class="tab-content hidden space-y-6">
+            
+            <!-- Executive Summary Header -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start space-x-4">
+                <div class="p-3 bg-amber-500 text-slate-950 rounded-xl text-xl font-bold">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-amber-900 text-lg">Informe de Auditoría y Control de Errores</h3>
+                    <p class="text-xs text-amber-800 mt-1 leading-relaxed">
+                        Durante la revisión técnica del documento original 2026/2027 se han detectado 3 incidencias principales que requieren corrección formal inmediata en la documentación del CEIP.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Audit Findings List -->
+            <div class="space-y-4">
+                <!-- Finding 1 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 hover:border-slate-300 transition">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-md">Incidencia 1</span>
+                            <h4 class="font-bold text-slate-900">Discrepancia en la Denominación del Centro Educativo</h4>
+                        </div>
+                        <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Prioridad Media</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-3">
+                        En el encabezado del apartado <em>Resumen y Normativa</em> figura la denominación <strong>CEIP Juan Mendoza Mendoza</strong>, mientras que en los encabezados de los cuadrantes mensuales (Noviembre a Marzo) figura <strong>CEIP SANCTI PETRI</strong>.
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg text-xs text-slate-700 border border-slate-200">
+                        <strong><i class="fa-solid fa-wrench text-blue-500 mr-1"></i> Acción Correctora Recomendada:</strong> Unificar oficialmente la nomenclatura institucional del colegio en la portada y todas las cabeceras de tablas antes del archivo oficial.
+                    </div>
+                </div>
+
+                <!-- Finding 2 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 hover:border-slate-300 transition">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-md">Incidencia 2</span>
+                            <h4 class="font-bold text-slate-900">Truncamiento de Datos en el Mes de Marzo de 2027</h4>
+                        </div>
+                        <span class="bg-rose-100 text-rose-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Prioridad Alta</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-3">
+                        La tabla del mes de <strong>Marzo de 2027</strong> se encuentra incompleta en la documentación original. Únicamente incluye los datos de <em>María Teresa</em> y <em>Mayka</em> hasta el 5 de marzo, interrumpiéndose de forma abrupta.
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg text-xs text-slate-700 border border-slate-200">
+                        <strong><i class="fa-solid fa-wrench text-blue-500 mr-1"></i> Acción Correctora Recomendada:</strong> Recompletar la matriz de marzo completa para el resto de docentes y añadir las tablas correspondientes a los meses del tercer trimestre (Abril, Mayo y Junio).
+                    </div>
+                </div>
+
+                <!-- Finding 3 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 hover:border-slate-300 transition">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-md">Observación 3</span>
+                            <h4 class="font-bold text-slate-900">Reparto Asimétrico en el Equipo Directivo</h4>
+                        </div>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Informativa</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-3">
+                        Integrantes de la directiva (<em>Mamen</em> y <em>Alfonso</em>) registran un promedio de guardias inferior (ej. en Noviembre: 4 y 6 guardias respectivamente vs. la media lectiva de 10-11).
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg text-xs text-slate-700 border border-slate-200">
+                        <strong><i class="fa-solid fa-wrench text-blue-500 mr-1"></i> Justificación Formal:</strong> Esto es plenamente coherente con la reducción horaria regulada por cargos directivos, pero conviene especificar dicha exención parcial explícitamente en el anexo de observaciones.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Checklist -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-900 text-lg mb-3">Checklist de Verificación de Recomendaciones</h3>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition">
+                        <input type="checkbox" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500" checked">
+                        <span class="text-sm text-slate-700 font-medium">1. Verificación matemática de la ecuación de 11 puestos / 13 libres (Completado)</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition">
+                        <input type="checkbox" id="check1" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+                        <span class="text-sm text-slate-700 font-medium">2. Homogeneizar nombre del centro (CEIP Sancti Petri vs CEIP Juan Mendoza)</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition">
+                        <input type="checkbox" id="check2" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+                        <span class="text-sm text-slate-700 font-medium">3. Completar datos faltantes del mes de Marzo de 2027</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition">
+                        <input type="checkbox" id="check3" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+                        <span class="text-sm text-slate-700 font-medium">4. Diseñar protocolo de sustituciones para ausencias y permisos diarios</span>
+                    </label>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TAB 4: SIMULADOR DE COBERTURA ================= -->
+        <section id="tab-simulador" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div class="mb-6">
+                    <h3 class="font-bold text-slate-900 text-xl">Simulador de Cobertura Diaria</h3>
+                    <p class="text-xs text-slate-500">Ajusta el número de docentes en plantilla y puestos requeridos para comprobar el balance de exenciones libres.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <!-- Sliders / Controls -->
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-semibold text-slate-700">Docentes Totales en Plantilla</label>
+                                <span id="simPlantillaVal" class="text-sm font-bold text-brand-600">24</span>
+                            </div>
+                            <input type="range" id="simPlantilla" min="15" max="35" value="24" oninput="runSimulation()" class="w-full accent-brand-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-semibold text-slate-700">Puestos Necesarios Diarios</label>
+                                <span id="simPuestosVal" class="text-sm font-bold text-indigo-600">11</span>
+                            </div>
+                            <input type="range" id="simPuestos" min="5" max="20" value="11" oninput="runSimulation()" class="w-full accent-indigo-600">
+                        </div>
+
+                        <!-- Zone breakdown adjustment -->
+                        <div class="border-t pt-4">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Distribución de Puestos por Zonas</h4>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="p-2 bg-slate-50 rounded border">
+                                    <span class="text-slate-500 block">Infantil</span>
+                                    <span class="font-bold text-slate-800">3 Puestos (TO1, TO2, PA)</span>
+                                </div>
+                                <div class="p-2 bg-slate-50 rounded border">
+                                    <span class="text-slate-500 block">Olivos</span>
+                                    <span class="font-bold text-slate-800">2 Puestos (OL, PU)</span>
+                                </div>
+                                <div class="p-2 bg-slate-50 rounded border">
+                                    <span class="text-slate-500 block">Pistas</span>
+                                    <span class="font-bold text-slate-800">4 Puestos (PV, PF, PS, PI)</span>
+                                </div>
+                                <div class="p-2 bg-slate-50 rounded border">
+                                    <span class="text-slate-500 block">Aula Específica</span>
+                                    <span class="font-bold text-slate-800">2 Puestos (AE1, AE2)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Live Card -->
+                    <div class="bg-slate-900 text-white rounded-2xl p-6 flex flex-col justify-between h-full space-y-6">
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">Resultado de Balance</span>
+                            <h4 class="text-2xl font-bold text-white">Docentes Libres / Exentos</h4>
+                        </div>
+
+                        <div class="text-center py-4">
+                            <span id="simLibresVal" class="text-6xl font-black text-emerald-400">13</span>
+                            <span class="block text-xs text-slate-400 mt-2">Profesorado exento de guardia por día</span>
+                        </div>
+
+                        <div id="simAlertBox" class="p-3 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Configuración óptima: Garantiza rotación equitativa y cobertura completa.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-4 text-center text-xs text-slate-500 no-print">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© 2026/2027 CEIP - Sistema de Gestión e Inspección de Guardias de Recreo • Adaptado a la Orden de 31 de agosto de 2026</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // Sample dataset reflecting the report's audit findings
+        const scheduleData = {
+            nov: [
+                // Infantil (5 doc)
+                { name: "María Teresa", zone: "Infantil", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Lucía", zone: "Infantil", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Rosa", zone: "Infantil", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Sole", zone: "Infantil", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Belén", zone: "Infantil", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                // 1er Ciclo / Olivos (4 doc)
+                { name: "Saray", zone: "1º Ciclo", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                { name: "Isabel", zone: "1º Ciclo", jornada: "Completa", guardias: 8, avg: "2.00 /sem", status: "Base Estándar" },
+                { name: "Mónica", zone: "1º Ciclo", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                { name: "Loli", zone: "1º Ciclo", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                // Pistas (10 doc)
+                { name: "Mamen (Directora)", zone: "Pistas", jornada: "Reducida Dir.", guardias: 4, avg: "1.00 /sem", status: "Exención Parcial Directiva" },
+                { name: "Alfonso (Jefe Est.)", zone: "Pistas", jornada: "Reducida Dir.", guardias: 6, avg: "1.50 /sem", status: "Exención Parcial Directiva" },
+                { name: "Antonio", zone: "Pistas", jornada: "Completa", guardias: 9, avg: "2.25 /sem", status: "Equilibrado" },
+                { name: "Juan", zone: "Pistas", jornada: "Completa", guardias: 9, avg: "2.25 /sem", status: "Equilibrado" },
+                { name: "Carmen", zone: "Pistas", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "David", zone: "Pistas", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                { name: "María José", zone: "Pistas", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                { name: "Fran", zone: "Pistas", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Manuel", zone: "Pistas", jornada: "Completa", guardias: 9, avg: "2.25 /sem", status: "Equilibrado" },
+                { name: "Mariloli", zone: "Pistas", jornada: "Completa", guardias: 8, avg: "2.00 /sem", status: "Base Estándar" },
+                // Aula Específica / PT (4 doc)
+                { name: "Virginia", zone: "Aula Específica", jornada: "Completa", guardias: 10, avg: "2.50 /sem", status: "Equilibrado" },
+                { name: "Pilar", zone: "Aula Específica", jornada: "Completa", guardias: 11, avg: "2.75 /sem", status: "Equilibrado" },
+                { name: "Ana", zone: "Aula Específica", jornada: "Parcial 15.5h", guardias: 4, avg: "1.00 /sem", status: "Adaptado a Jornada" },
+                { name: "Eva H.", zone: "Aula Específica", jornada: "Completa", guardias: 12, avg: "3.00 /sem", status: "Genera Compensación" },
+                // Religión / Apoyo (1 doc)
+                { name: "Macarena", zone: "Religión", jornada: "Parcial 14.0h", guardias: 4, avg: "1.00 /sem", status: "Adaptado a Jornada" },
+            ],
+            dic: [
+                { name: "María Teresa", zone: "Infantil", jornada: "Completa", guardias: 8, avg: "2.8 /sem", status: "Equilibrado" },
+                { name: "Lucía", zone: "Infantil", jornada: "Completa", guardias: 7, avg: "2.5 /sem", status: "Equilibrado" },
+                { name: "Mamen (Directora)", zone: "Pistas", jornada: "Reducida Dir.", guardias: 3, avg: "1.0 /sem", status: "Exención Parcial" },
+                { name: "Ana", zone: "Aula Específica", jornada: "Parcial 15.5h", guardias: 3, avg: "1.0 /sem", status: "Adaptado" },
+                { name: "Macarena", zone: "Religión", jornada: "Parcial 14.0h", guardias: 3, avg: "1.0 /sem", status: "Adaptado" },
+            ],
+            ene: [
+                { name: "María Teresa", zone: "Infantil", jornada: "Completa", guardias: 8, avg: "2.6 /sem", status: "Equilibrado" },
+                { name: "Eva H.", zone: "Aula Específica", jornada: "Completa", guardias: 9, avg: "3.0 /sem", status: "Genera Compensación" },
+                { name: "Macarena", zone: "Religión", jornada: "Parcial 14.0h", guardias: 3, avg: "1.0 /sem", status: "Adaptado" },
+            ],
+            feb: [
+                { name: "María Teresa", zone: "Infantil", jornada: "Completa", guardias: 10, avg: "2.6 /sem", status: "Equilibrado" },
+                { name: "Saray", zone: "1º Ciclo", jornada: "Completa", guardias: 10, avg: "2.6 /sem", status: "Equilibrado" },
+                { name: "Macarena", zone: "Religión", jornada: "Parcial 14.0h", guardias: 4, avg: "1.0 /sem", status: "Adaptado" },
+            ],
+            mar: [
+                { name: "María Teresa", zone: "Infantil", jornada: "Completa", guardias: 2, avg: "N/A", status: "Datos Incompletos (Audit)" },
+                { name: "Mayka", zone: "Infantil", jornada: "Completa", guardias: 2, avg: "N/A", status: "Datos Incompletos (Audit)" },
+            ]
+        };
+
+        // Chart Initialization
+        let monthlyChart;
+
+        window.onload = function() {
+            initChart();
+            filterSchedule();
+            runSimulation();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.add('bg-brand-600', 'text-white');
+                activeNav.classList.remove('text-slate-300');
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Nov 2026', 'Dic 2026', 'Ene 2027', 'Feb 2027'],
+                    datasets: [{
+                        label: 'Guardias Totales Realizadas',
+                        data: [220, 154, 165, 209],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function filterSchedule() {
+            const month = document.getElementById('monthSelect').value;
+            const search = document.getElementById('teacherSearch').value.toLowerCase();
+            const zone = document.getElementById('zoneFilter').value;
+
+            const tableBody = document.getElementById('scheduleTableBody');
+            tableBody.innerHTML = '';
+
+            const list = scheduleData[month] || scheduleData['nov'];
+
+            const filtered = list.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search);
+                const matchesZone = (zone === 'all' || item.zone === zone);
+                return matchesSearch && matchesZone;
+            });
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">No se encontraron docentes con los filtros seleccionados.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(row => {
+                let badgeColor = "bg-slate-100 text-slate-700";
+                if (row.status.includes("Genera Compensación")) badgeColor = "bg-purple-100 text-purple-800 font-bold";
+                else if (row.status.includes("Exención") || row.status.includes("Adaptado")) badgeColor = "bg-amber-100 text-amber-800";
+                else if (row.status.includes("Incompletos")) badgeColor = "bg-rose-100 text-rose-800 font-bold";
+                else if (row.status.includes("Equilibrado") || row.status.includes("Base")) badgeColor = "bg-emerald-100 text-emerald-800";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-slate-800">${row.name}</td>
+                    <td class="px-4 py-3 text-slate-600">${row.zone}</td>
+                    <td class="px-4 py-3 text-center text-slate-500 text-xs">${row.jornada}</td>
+                    <td class="px-4 py-3 text-center font-bold text-slate-800">${row.guardias}</td>
+                    <td class="px-4 py-3 text-center text-xs font-mono text-slate-600">${row.avg}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="text-xs px-2.5 py-1 rounded-full ${badgeColor}">${row.status}</span>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Update title
+            const monthNames = { nov: "Noviembre 2026", dic: "Diciembre 2026", ene: "Enero 2027", feb: "Febrero 2027", mar: "Marzo 2027" };
+            document.getElementById('scheduleTableTitle').innerText = `Resumen Cómputo ${monthNames[month]}`;
+            
+            const badge = document.getElementById('scheduleStatusBadge');
+            if (month === 'mar') {
+                badge.className = "bg-rose-100 text-rose-800 text-xs px-2.5 py-1 rounded-full font-semibold";
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Tabla Incompleta en Documento Original`;
+            } else {
+                badge.className = "bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold";
+                badge.innerHTML = `<i class="fa-solid fa-check-circle mr-1"></i> Cómputo Verificado (Exacto)`;
+            }
+        }
+
+        function calculateCompensation() {
+            const guardias = parseFloat(document.getElementById('calcGuardias').value) || 0;
+            const base = parseFloat(document.getElementById('calcBase').value) || 0;
+            const resultElem = document.getElementById('calcResult');
+
+            const diff = guardias - base;
+            if (diff > 0) {
+                const horas = diff * 0.5;
+                resultElem.innerText = `${horas.toFixed(1)} Horas`;
+                resultElem.className = "text-2xl font-extrabold text-emerald-400";
+            } else {
+                resultElem.innerText = `0.0 Horas`;
+                resultElem.className = "text-2xl font-extrabold text-slate-400";
+            }
+        }
+
+        function runSimulation() {
+            const plantilla = parseInt(document.getElementById('simPlantilla').value);
+            const puestos = parseInt(document.getElementById('simPuestos').value);
+
+            document.getElementById('simPlantillaVal').innerText = plantilla;
+            document.getElementById('simPuestosVal').innerText = puestos;
+
+            const libres = plantilla - puestos;
+            const libresElem = document.getElementById('simLibresVal');
+            const alertBox = document.getElementById('simAlertBox');
+
+            libresElem.innerText = libres;
+
+            if (libres < 5) {
+                libresElem.className = "text-6xl font-black text-rose-500";
+                alertBox.className = "p-3 rounded-lg text-xs font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center space-x-2";
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>¡Atención! Excesiva sobrecarga de guardias para la plantilla.</span>`;
+            } else if (libres > 18) {
+                libresElem.className = "text-6xl font-black text-amber-400";
+                alertBox.className = "p-3 rounded-lg text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-2";
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>Atención: Número elevado de exenciones diarias. Verificar cobertura.</span>`;
+            } else {
+                libresElem.className = "text-6xl font-black text-emerald-400";
+                alertBox.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center space-x-2";
+                alertBox.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Configuración óptima: Garantiza rotación equitativa y cobertura completa.</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
